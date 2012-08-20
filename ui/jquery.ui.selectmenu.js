@@ -182,11 +182,10 @@ $.widget("ui.selectmenu", {
 			});
 
 		// set width when not set via options
-		if (!o.width) {
-			o.width = this.element.outerWidth();
-		}
+		o.tmpWidth = o.width || self.element.outerWidth();
+		
 		// set menu button width
-		this.newelement.width(o.width);
+		this.newelement.width(o.tmpWidth);
 
 		// hide original selectmenu element
 		this.element.hide();
@@ -269,8 +268,23 @@ $.widget("ui.selectmenu", {
 
 		// needed when window is resized
 		$(window).bind( "resize.selectmenu-" + this.ids[0], $.proxy( self.close, this ) );
+		$(window).bind( "resize.selectmenu-" + this.ids[0], function() {
+			// Due to browsers triggering resize constantly while resizing we clear/set
+			// a timeout so resetWidth only get's called once.
+	                clearTimeout(self.resizeTimeout);
+	                self.resizeTimeout = setTimeout( function() {
+	                    self.resetWidth(self)
+	                }, 250); 
+		});
 	},
-
+        resetWidth: function(self) {
+        	// If width wasn't already set in options, we want to grow/shrink with the select.
+        	if (!self.options.width) {
+                	self.element.show();
+			self.newelement.width(this.element.outerWidth());
+                	self.element.hide();
+		}
+        },
 	_init: function() {
 		var self = this, o = this.options;
 
